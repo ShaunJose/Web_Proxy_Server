@@ -5,20 +5,23 @@
 //imports
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashSet;
 
 public class WebProxy implements Runnable
 {
   //class variables
   private int port;
+  private HashSet<Thread> requestThreads;
 
   /**
-   * Creates a web proxy object
+   * Creates a web proxy object. Intiialises the class variables
    *
    * @param port: The port at which you want the WebProxy  server to listen
    */
   WebProxy(int port)
   {
     this.port = port;
+    requestThreads = new HashSet<Thread>();
   }
 
   /**
@@ -47,33 +50,43 @@ public class WebProxy implements Runnable
     }
     catch(Exception e)
     {
-      System.out.println("thats what you get");
+      System.out.println("Server socket could not be created!");
     }
   }
 
 
   /**
-   * //TODO: ADD FUNC DESCR HERE
+   * Handles a request by making reqHandler object run as another thread
+   *
+   * @param clientSocket: The socket for the relevant request
+   *
+   * @return: None
    */
   private void handleRequest(Socket clientSocket)
   {
-    //TODO: HANDLE REQUEST HERE
-    System.out.println("Not accepting that yet...");
+    //Create request handler object and make it run on a thread
     RequestHandler reqHandler = new RequestHandler(clientSocket);
+    Thread reqThread = new Thread(reqHandler);
+    reqThread.start(); //start the thread
+
+    //save the thread here
+    requestThreads.add(reqThread);
   }
 
 
    /**
-    *
+    * //TODO: ADD FUNC DESCR HERE
     */
    public void closeServer()
    {
-     //CLOSE SERVER HERE
+     //TODO: CLOSE SERVER HERE
    }
 
 
   /**
    * Thread of WebProxy object starts here. Just makes the proxy start listening
+   *
+   * @return: None
    */
   @Override
   public void run()

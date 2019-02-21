@@ -16,6 +16,14 @@ class ManagementConsole
   //class variables
   private static HashSet<String> blockedURLs = new HashSet<String>();
 
+
+  /**
+   * Program initiation method. Accepts requests to block certain servers, and runs the web proxy server on another thread
+   *
+   * @param args: The input to the program while running it
+   *
+   * @return: None
+   */
   public static void main(String[] args)
   {
     //start managing the server and blocked lists
