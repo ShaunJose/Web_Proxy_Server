@@ -36,9 +36,6 @@ public class WebProxy implements Runnable
       ServerSocket serverSocket = new ServerSocket(this.port);
       System.out.println("Listening on port " + this.port + "...");
       handleRequest(serverSocket.accept());
-      // DataInputStream dIn = new DataInputStream(socket.getInputStream());
-      // System.out.println(dIn.readLine());
-      // Thread.sleep(5000);
       // System.out.println(socket.getLocalSocketAddress());
       // System.out.println(socket.getRemoteSocketAddress());
       // System.out.println(socket.toString());

@@ -4,8 +4,10 @@
 
 //imports
 import java.net.Socket;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 
-class RequestHandler implements Runnable
+public class RequestHandler implements Runnable
 {
 
   //class variables
@@ -25,8 +27,42 @@ class RequestHandler implements Runnable
     */
    private void processRequest()
    {
-     //TODO: PROCESS THE REQUEST HERE
-     System.out.println("Crazy one: " + this.socket.toString());
+     //Get url and port of request
+     String[] requestUrlAndPort = getUrlAndPort();
+
+     System.out.println(requestUrlAndPort[0]);
+     System.out.println(requestUrlAndPort[1]);
+
+     //Connect to appropriate server
+   }
+
+
+   /**
+    *
+    */
+   private String[] getUrlAndPort()
+   {
+     //line of request from the client
+     String requestLine = "";
+
+     //get input stream of socket and read request line
+     try
+     {
+       DataInputStream inputStream = new DataInputStream(socket.getInputStream());
+       requestLine = inputStream.readLine();
+     }
+     catch(Exception e)
+     {
+       System.out.println("Could not read input request :(");
+     }
+
+     //get different parts of the request
+     String[] requestParts = requestLine.split(" ");
+
+     //get the url name requested by the client and the port number as well
+     String[] urlAndPort = requestParts[1].split(":");
+
+     return urlAndPort;
    }
 
 
