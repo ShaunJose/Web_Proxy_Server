@@ -6,29 +6,16 @@
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Scanner;
-import java.net.Socket;
 import java.lang.Thread;
 
 class ManagementConsole
 {
 
   //class variables
-  static HashSet<String> blockedURLs = new HashSet<String>();
+  public static HashSet<String> blockedURLs = new HashSet<String>();
 
   public static void main(String[] args)
   {
-    // TODO: fix
-    // //accept url from user
-    // String url = "sbefbsebfk";
-    //
-    // //add http:// if required
-    // if(!url.contains("http://"))
-    //   url = "http://" + url;
-    // if(isValidUrl(url))
-    //   System.out.println("Valid");
-    // else
-    //  System.out.println("Invalid");
-
     //start managing the server and blocked lists
     start_managing();
 
@@ -100,7 +87,7 @@ class ManagementConsole
     }
 
     //make the server start listening
-    //start_listening();
+    WebProxy.start_listening();
   }
 
 
