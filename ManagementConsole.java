@@ -12,7 +12,8 @@ class ManagementConsole
 {
 
   //class variables
-  public static HashSet<String> blockedURLs = new HashSet<String>();
+  private static HashSet<String> blockedURLs = new HashSet<String>();
+  private static final int DEFAULT_PORT = 4000;
 
   public static void main(String[] args)
   {
@@ -23,18 +24,23 @@ class ManagementConsole
   }
 
 
- /**
-  * Manages blockedUrls set, stores it in a file, and calls the        start_listening() method to start running a server
-  *
-  * @return: None
-  */
+  /**
+   * Manages blockedUrls set, stores it in a file, and calls the        start_listening() method to start running a server
+   *
+   * @return: None
+   */
   private static void start_managing()
   {
     //Instructions for managing urls
     System.out.println("Instructions:");
     System.out.println("1. Enter 'block URL_name' to block a URL");
     System.out.println("2. Enter 'list blocked' to check which URLs are blocked");
-    System.out.println("3. Enter 'e' to indicate that you're done listing URLs");
+    System.out.println("3. Enter 'e' to indicate that you want to exit");
+
+    //make Web proxy server run on another thread
+    WebProxy proxy = new WebProxy(DEFAULT_PORT);
+    Thread proxyThread = new Thread(proxy);
+    proxyThread.start();
 
     //create variables needed for block url processing
     Scanner sc = new Scanner(System.in);
@@ -43,9 +49,8 @@ class ManagementConsole
     //Accepting blocked lists
     while(addingBlockedSites)
     {
-      //get input
-      String input = sc.nextLine();
-      //TODO: convert to lower case
+      //get input in lower case, so as to not add duplicates just because of case difference
+      String input = sc.nextLine().toLowerCase();
 
       //check input and act accordingly
       //Case 1: exit
@@ -86,8 +91,18 @@ class ManagementConsole
 
     }
 
-    //make the server start listening
-    WebProxy.start_listening();
+    proxy.closeServer();
+
+    //end the thread
+    try
+    {
+      proxyThread.join();
+    }
+    catch(Exception e)
+    {
+      e.printStackTrace();
+    }
+
   }
 
 
