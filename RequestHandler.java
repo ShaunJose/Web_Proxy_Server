@@ -11,44 +11,49 @@ public class RequestHandler implements Runnable
 {
 
   //class variables
-  private Socket socket;
+  private Socket clientSocket;
+  private Socket serverSocket;
 
   /**
-   * Constructor. Creates object and initialises socket
+   * Constructor. Creates object and initialises clientSocket
    */
-   RequestHandler(Socket socket)
+   RequestHandler(Socket clientSocket)
    {
-     this.socket = socket;
+     this.clientSocket = clientSocket;
    }
 
 
    /**
-    * Handles a request appropriately
+    * Handles a request appropriately, by connecting to the right server and getting info from it
+    *
+    * @return: None
     */
    private void processRequest()
    {
      //Get url and port of request
      String[] requestUrlAndPort = getUrlAndPort();
 
-     System.out.println(requestUrlAndPort[0]);
-     System.out.println(requestUrlAndPort[1]);
-
      //Connect to appropriate server
+     connect(requestUrlAndPort[0], Integer.parseInt(requestUrlAndPort[1]));
+
+     System.out.println("Socket request touchdown! :D");
    }
 
 
    /**
+    * Finds out the url and port from the input stream of the clientSocket
     *
+    * @return: String array with first element as url name and second element as port number
     */
    private String[] getUrlAndPort()
    {
      //line of request from the client
      String requestLine = "";
 
-     //get input stream of socket and read request line
+     //get input stream of clientSoc and read request line
      try
      {
-       DataInputStream inputStream = new DataInputStream(socket.getInputStream());
+       DataInputStream inputStream = new DataInputStream(clientSocket.getInputStream());
        requestLine = inputStream.readLine();
      }
      catch(Exception e)
@@ -63,6 +68,14 @@ public class RequestHandler implements Runnable
      String[] urlAndPort = requestParts[1].split(":");
 
      return urlAndPort;
+   }
+
+
+   /**
+    */
+   private void connect(String url, int port)
+   {
+
    }
 
 

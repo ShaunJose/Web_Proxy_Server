@@ -6,4 +6,20 @@ An implementation of a web proxy server (acting as an intermediary between a cli
 
 
 ### Tools used
-<TBD (with installation code snippets)>
+1. curl
+
+
+### Instructions:
+1. Compile ManagementConsole.java
+
+`javac ManagementConsole.java`
+
+2. Run ManagementConsole.java
+
+`java ManagementConsole`
+
+3. Block sites you want to by following instructions which will we displayed
+
+4. Open new tab on terminal and use curl to send a request to the proxy
+
+`curl -x localhost:4000 <InterestedSiteUrl>`

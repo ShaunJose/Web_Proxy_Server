@@ -12,6 +12,7 @@ public class WebProxy implements Runnable
   //class variables
   private int port;
   private HashSet<Thread> requestThreads;
+  private boolean open;
 
   /**
    * Creates a web proxy object. Intiialises the class variables
@@ -22,6 +23,7 @@ public class WebProxy implements Runnable
   {
     this.port = port;
     requestThreads = new HashSet<Thread>();
+    this.open = true; //server is open
   }
 
   /**
@@ -35,7 +37,11 @@ public class WebProxy implements Runnable
     {
       ServerSocket serverSocket = new ServerSocket(this.port);
       System.out.println("Listening on port " + this.port + "...");
-      handleRequest(serverSocket.accept());
+
+      do
+      {
+        handleRequest(serverSocket.accept());
+      } while(this.open);
       // System.out.println(socket.getLocalSocketAddress());
       // System.out.println(socket.getRemoteSocketAddress());
       // System.out.println(socket.toString());
@@ -49,6 +55,8 @@ public class WebProxy implements Runnable
     {
       System.out.println("Server socket could not be created!");
     }
+
+    System.out.println("FOR REAL");
   }
 
 
@@ -74,9 +82,10 @@ public class WebProxy implements Runnable
    /**
     * //TODO: ADD FUNC DESCR HERE
     */
-   public void closeServer()
+   public void shutDown()
    {
-     //TODO: CLOSE SERVER HERE
+     //TODO: close SERVER SOCKET HERE, along with all request threads
+     this.open = false;
    }
 
 

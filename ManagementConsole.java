@@ -100,7 +100,8 @@ class ManagementConsole
 
     }
 
-    proxy.closeServer();
+    //shut down the web proxy and all request threads
+    proxy.shutDown();
 
     //end the thread
     try
