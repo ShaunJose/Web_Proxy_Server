@@ -8,6 +8,7 @@ import java.net.Socket;
 
 public class WebProxy implements Runnable
 {
+  //class variables
   private int port;
 
   /**
@@ -58,6 +59,7 @@ public class WebProxy implements Runnable
   {
     //TODO: HANDLE REQUEST HERE
     System.out.println("Not accepting that yet...");
+    RequestHandler reqHandler = new RequestHandler(clientSocket);
   }
 
 

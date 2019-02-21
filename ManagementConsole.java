@@ -10,10 +10,11 @@ import java.lang.Thread;
 
 class ManagementConsole
 {
+  //constants
+  private static final int DEFAULT_PORT = 4000;
 
   //class variables
   private static HashSet<String> blockedURLs = new HashSet<String>();
-  private static final int DEFAULT_PORT = 4000;
 
   public static void main(String[] args)
   {
