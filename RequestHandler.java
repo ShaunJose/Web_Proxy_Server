@@ -37,9 +37,10 @@ public class RequestHandler implements Runnable
    private void processRequest()
    {
      //Get url name of request, i.e. url client wants to connect to
-     String[] methodAndHost = getHTTPMethodHost();
-     String method = methodAndHost[0];
-     String hostName = methodAndHost[1];
+     String[] reqStuff = getHTTPMethodHostReq();
+     System.out.println("New request:\n" + reqStuff[2]);
+     String method = reqStuff[0];
+     String hostName = reqStuff[1];
 
      //Connect to appropriate server and send status message to client
      try
@@ -47,30 +48,34 @@ public class RequestHandler implements Runnable
        //open connection to server
        serverSocket = new Socket(hostName, RequestHandler.HTTP_PORT);
 
-       //send status to client via clientSocket
-       DataOutputStream outputStream = new DataOutputStream(this.clientSocket.getOutputStream());
-       outputStream.writeBytes(RequestHandler.SUCCESS_STATUS);
+       //send client request to server
+       DataOutputStream outputStream;
+       outputStream = new DataOutputStream(this.serverSocket.getOutputStream());
+       outputStream.writeBytes(reqStuff[2]);
        outputStream.flush();
      }
 
      catch(Exception e)
      {
-       System.out.println("Could not connect to actual server :(");
-       e.printStackTrace();
+       System.out.println("Could not connect to actual server :( \n" +
+       "Check if you entered the url correctly!!");
      }
+
+     String response = getHTTPResponse();
+     System.out.println(response);
 
      System.out.println("Socket request touchdown! :D");
    }
 
 
    /**
-    * Finds out the method and host from the input stream of the clientSocket, for HTTP requests. Also prints out the entire request message
+    * Finds out the method, host and request from the input stream of the clientSocket, for HTTP requests.
     *
-    * @return: String array of the method and host name
+    * @return: String array of the method, host name and the request
     */
-   private String[] getHTTPMethodHost()
+   private String[] getHTTPMethodHostReq()
    {
-     String[] resulArr = new String[2]; //will contain method and host name
+     String[] resulArr = new String[3]; //will contain method, host name, req
      String requestMessage = ""; //will contain entire request message
 
      //get method and hostName from HTTP request
@@ -94,7 +99,7 @@ public class RequestHandler implements Runnable
        e.printStackTrace();
      }
 
-     System.out.println("New request: \n" + requestMessage); //print request as proof that it works
+     resulArr[2] = requestMessage;
 
      return resulArr;
    }
@@ -113,13 +118,13 @@ public class RequestHandler implements Runnable
      String requestMessage = "";
      Scanner sc = null;
 
-     //get input stream
+     //get client input stream
      try
      { sc = new Scanner(clientSocket.getInputStream()); }
      catch(Exception e)
      { e.printStackTrace(); }
 
-     //get header of client message
+     //get header of client request
      do
      {
        requestLine = sc.nextLine() + "\r\n";
@@ -132,15 +137,54 @@ public class RequestHandler implements Runnable
        requestLine = "";
        String body = "";
 
-       //get body of client message
-       while(sc.hasNext())
+       //get body of client request
+       do
        {
          requestLine = sc.nextLine() + "\r\n";
          requestMessage += requestLine;
-       }
+       } while(!requestLine.equals("</html>") && sc.hasNext());
      }
 
      return requestMessage;
+   }
+
+
+   /**
+    * Gets the response message from the server
+    *
+    * @return: String with the HTTP request from the client side
+    */
+   private String getHTTPResponse()
+   {
+     String responseLine = "";
+     String responseMessage = "";
+     Scanner sc = null;
+
+     //get server input stream
+     try
+     { sc = new Scanner(serverSocket.getInputStream()); }
+     catch(Exception e)
+     { e.printStackTrace(); }
+
+     //get header of server response
+     do
+     {
+       responseLine = sc.nextLine() + "\r\n";
+       responseMessage += responseLine;
+     } while(!responseLine.equals("\r\n"));
+
+     //get body
+     responseLine = "";
+     String body = "";
+
+     //get body of server response
+     do
+     {
+       responseLine = sc.nextLine() + "\r\n";
+       responseMessage += responseLine;
+     } while(!responseLine.contains("</html>") && sc.hasNext());
+
+     return responseMessage;
    }
 
 

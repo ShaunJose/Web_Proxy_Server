@@ -84,7 +84,7 @@ class ManagementConsole
         if(!isValidUrl(input))
           System.out.println("This URL is invalid");
         //if URL already blocked
-        else if(blockedURLs.contains(input))
+        else if(blocked(input))
           System.out.println("This URL has already been blocked.");
         //block the URL
         else
@@ -142,7 +142,7 @@ class ManagementConsole
    *
    * @return: true indicating URL is valid, false otherwise
    */
-  public static boolean isValidUrl(String url)
+  private static boolean isValidUrl(String url)
   {
 
     try
@@ -155,5 +155,17 @@ class ManagementConsole
       return false;
     }
 
+  }
+
+
+  /**
+   *
+   */
+  public static boolean blocked(String url)
+  {
+    if(!url.contains("http://") && !url.contains("https://"))
+      url = "http://" + url; //might not be secure, so only http
+
+    return blockedURLs.contains(url);
   }
 }
