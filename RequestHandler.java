@@ -16,8 +16,8 @@ public class RequestHandler implements Runnable
   private Socket serverSocket;
 
   //constants
-  public static final String SUCCESS_STATUS = "HTTP/1.1 200 OK";
-  public static final String FAILURE_STATUS = "HTTP/1.1 400 Bad Request";
+  public static final String SUCCESS_STATUS = "HTTP/1.1 200 Connection established\r\n\r\n";
+  public static final String FAILURE_STATUS = "HTTP/1.1 400 Bad request";
   public static final int HTTP_PORT = 80;
 
   /**
@@ -51,11 +51,8 @@ public class RequestHandler implements Runnable
        DataOutputStream outputStream = new DataOutputStream(this.clientSocket.getOutputStream());
        outputStream.writeBytes(RequestHandler.SUCCESS_STATUS);
        outputStream.flush();
-
-       String requestMessage = getRequestMessage(method);
-       System.out.println(requestMessage);
-
      }
+
      catch(Exception e)
      {
        System.out.println("Could not connect to actual server :(");
@@ -63,37 +60,41 @@ public class RequestHandler implements Runnable
      }
 
      System.out.println("Socket request touchdown! :D");
-     String requestLine = "";
    }
 
 
    /**
-    * Finds out the method and host from the input stream of the clientSocket, for HTTP requests
+    * Finds out the method and host from the input stream of the clientSocket, for HTTP requests. Also prints out the entire request message
     *
     * @return: String array of the method and host name
     */
    private String[] getHTTPMethodHost()
    {
-     //will contain method and host name
-     String[] resulArr = new String[2];
+     String[] resulArr = new String[2]; //will contain method and host name
+     String requestMessage = ""; //will contain entire request message
 
      //get method and hostName from HTTP request
      try
      {
        DataInputStream inputStream = new DataInputStream(clientSocket.getInputStream()); //open input stream
-       String requestLine = inputStream.readLine(); //get first line
-       resulArr[0] = requestLine.substring(0, requestLine.indexOf(' ')); //method rcv
-       while(!requestLine.substring(0, 6).equals("Host: "))//while not host line
-       {
-         requestLine = inputStream.readLine(); // go to the next line
-       }
-       resulArr[1] = requestLine.substring(6); //get the name of the host
+
+       //get method
+       requestMessage = inputStream.readLine() + "\r\n"; //get first line of req
+       resulArr[0] = requestMessage.substring(0, requestMessage.indexOf(' '));
+
+       //get rest of message
+       String restOfMessage = getHTTPRequest(resulArr[0]);
+       resulArr[1] = restOfMessage.substring(6, restOfMessage.indexOf("\r\n")); //get the name of the host
+       requestMessage += restOfMessage; //update request message
      }
+
      catch(Exception e)
      {
        System.out.println("Could not read input request :(");
        e.printStackTrace();
      }
+
+     System.out.println("New request: \n" + requestMessage); //print request as proof that it works
 
      return resulArr;
    }
@@ -101,8 +102,12 @@ public class RequestHandler implements Runnable
 
    /**
     * Gets the request message from the client
+    *
+    * @param method: HTTP method being used
+    *
+    * @return: String with the HTTP request from the client side
     */
-   private String getRequestMessage(String method)
+   private String getHTTPRequest(String method)
    {
      String requestLine = "";
      String requestMessage = "";
@@ -132,7 +137,6 @@ public class RequestHandler implements Runnable
        {
          requestLine = sc.nextLine() + "\r\n";
          requestMessage += requestLine;
-         System.out.println("Test: " + requestLine);
        }
      }
 
