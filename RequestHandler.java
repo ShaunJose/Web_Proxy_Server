@@ -53,16 +53,22 @@ public class RequestHandler implements Runnable
        outputStream = new DataOutputStream(this.serverSocket.getOutputStream());
        outputStream.writeBytes(reqStuff[2]);
        outputStream.flush();
+
+       //get response from server in response to query
+       String response = getHTTPResponse();
+       //send response to client
+       DataOutputStream outputStr;
+       outputStr = new DataOutputStream(this.clientSocket.getOutputStream());
+       outputStr.writeUTF(response);
+       outputStr.flush();
      }
 
      catch(Exception e)
      {
        System.out.println("Could not connect to actual server :( \n" +
        "Check if you entered the url correctly!!");
+       e.printStackTrace();
      }
-
-     String response = getHTTPResponse();
-     System.out.println(response);
 
      System.out.println("Socket request touchdown! :D");
    }
