@@ -76,9 +76,7 @@ class ManagementConsole
         //get url part of input
         input = input.substring(6);
 
-        //add http:// if required
-        if(!input.contains("http://") && !input.contains("https://"))
-          input = "http://" + input; //might not be secure, so only http
+        input = formatURL(input);
 
         //if URL is invalid
         if(!isValidUrl(input))
@@ -157,14 +155,33 @@ class ManagementConsole
 
   }
 
+  /**
+   * Adds http or https to the String passed if it doesnt exist
+   *
+   * @param url: The url that has to be formatted (type String)
+   *
+   * @return: The formatted url
+   */
+  private static String formatURL(String url)
+  {
+    //add http:// if needed
+    if(!url.contains("http://") && !url.contains("https://"))
+      url = "http://" + url; //might not be secure, so only http
+
+    return url;
+  }
+
 
   /**
+   * Checks if a site is blocked or not
    *
+   * @param url: The url whose blockage being checked
+   *
+   * @return: True if site is blocked, else false
    */
   public static boolean blocked(String url)
   {
-    if(!url.contains("http://") && !url.contains("https://"))
-      url = "http://" + url; //might not be secure, so only http
+    url = formatURL(url);
 
     return blockedURLs.contains(url);
   }

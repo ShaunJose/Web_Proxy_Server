@@ -41,6 +41,22 @@ public class RequestHandler implements Runnable
      System.out.println("New request:\n" + reqStuff[2]);
      String method = reqStuff[0];
      String hostName = reqStuff[1];
+     boolean blocked = false;
+
+     if(ManagementConsole.blocked(hostName))
+     {
+       System.out.println("Client with address " + clientSocket.getRemoteSocketAddress() + " tried to access " + hostName + "!");
+       try
+       {
+         this.clientSocket.close();
+       }
+       catch(Exception e)
+       {
+         e.printStackTrace();
+       }
+       return;
+       //TODO: close server and thread here
+     }
 
      //Connect to appropriate server and send status message to client
      try
@@ -57,10 +73,9 @@ public class RequestHandler implements Runnable
        //get response from server in response to query
        String response = getHTTPResponse();
        //send response to client
-       DataOutputStream outputStr;
-       outputStr = new DataOutputStream(this.clientSocket.getOutputStream());
-       outputStr.writeUTF(response);
-       outputStr.flush();
+       outputStream = new DataOutputStream(this.clientSocket.getOutputStream());
+       outputStream.writeUTF(response);
+       outputStream.flush();
      }
 
      catch(Exception e)
