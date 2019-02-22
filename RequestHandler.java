@@ -22,6 +22,8 @@ public class RequestHandler implements Runnable
 
   /**
    * Constructor. Creates object and initialises clientSocket
+   *
+   * @param clientSocket: The socket through which the client sent a request
    */
    RequestHandler(Socket clientSocket)
    {
