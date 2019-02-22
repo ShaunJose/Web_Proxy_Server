@@ -46,16 +46,8 @@ public class RequestHandler implements Runnable
      if(ManagementConsole.blocked(hostName))
      {
        System.out.println("Client with address " + clientSocket.getRemoteSocketAddress() + " tried to access " + hostName + "!");
-       try
-       {
-         this.clientSocket.close();
-       }
-       catch(Exception e)
-       {
-         e.printStackTrace();
-       }
+       this.shutDown();
        return;
-       //TODO: close server and thread here
      }
 
      //Connect to appropriate server and send status message to client
@@ -86,6 +78,8 @@ public class RequestHandler implements Runnable
      }
 
      System.out.println("Socket request touchdown! :D");
+
+     this.shutDown();
    }
 
 
@@ -206,6 +200,27 @@ public class RequestHandler implements Runnable
      } while(!responseLine.contains("</html>") && sc.hasNext());
 
      return responseMessage;
+   }
+
+
+   /**
+    * Closes the client and server sockets, if initialised and still open
+    */
+   private void shutDown()
+   {
+     try
+     {
+       if(clientSocket != null && !clientSocket.isClosed())
+         clientSocket.close();
+
+       if(serverSocket != null && !serverSocket.isClosed())
+         serverSocket.close();
+     }
+
+     catch(Exception e)
+     {
+       e.printStackTrace();
+     }
    }
 
 
