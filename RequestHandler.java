@@ -56,13 +56,13 @@ public class RequestHandler implements Runnable
      boolean blocked = false;
      if(ManagementConsole.blocked(hostName))
      {
-       try{
+       try { //send FORBIDDEN_STATUS to client
          DataOutputStream outputStream = new DataOutputStream(clientSocket.getOutputStream());
          outputStream.writeUTF(RequestHandler.FORBIDDEN_STATUS);
          outputStream.flush();
        }
        catch(Exception e) { e.printStackTrace(); }
-       System.out.println("Client with address " + clientSocket.getRemoteSocketAddress() + " tried to access " + hostName + "!");
+       System.out.println("Client with address " + clientSocket.getRemoteSocketAddress() + " tried to access " + hostName + "!"); //let manager know who tried to access what
        this.shutDown(); //close client socket connection
        return; //end request thread
      }
@@ -79,27 +79,40 @@ public class RequestHandler implements Runnable
        outputStream.writeBytes(request);
        outputStream.flush();
 
+       // set up client output stream
+       outputStream = new DataOutputStream(this.clientSocket.getOutputStream());
+
+       //if req is https, listen to client and server until they're both done
        if(type == ReqType.HTTPS)
        {
-         outputStream = new DataOutputStream(this.clientSocket.getOutputStream());
+         //send success message to client!
          outputStream.writeUTF(RequestHandler.SUCCESS_STATUS);
          outputStream.flush();
-         this.shutDown();
-         return;
+
+         //listen to server on another thread
+         ServerListenHTTPS serverListener = new ServerListenHTTPS(clientSocket, serverSocket);
+         Thread serverThread = new Thread(serverListener);
+         serverThread.start();
+         //listen to client using the current thread
+         ClientListenHTTPS clientListener = new ClientListenHTTPS(clientSocket, serverSocket);
+         clientListener.listenAndSend();
+       }
+       else //if req is http, then send response once and relax :)
+       {
+         //get response from server in response to query
+         String response = getHTTPResponse();
+         //send response to client
+         outputStream.writeUTF(response);
+         outputStream.flush();
        }
 
-       //get response from server in response to query
-       String response = getHTTPResponse();
-       //send response to client
-       outputStream = new DataOutputStream(this.clientSocket.getOutputStream());
-       outputStream.writeUTF(response);
-       outputStream.flush();
      }
 
      catch(Exception e)
      {
        System.out.println("Could not connect to actual server :( \n" +
        "Check if you entered the url correctly!!");
+       e.printStackTrace();
      }
 
      System.out.println("Socket request touchdown! :D");
