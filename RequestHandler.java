@@ -1,5 +1,6 @@
 /* author: Shaun Jose
    github: github.com/ShaunJose
+   Class Description: Handles all types of requests appropriately (http or https)
 */
 
 //imports
@@ -10,24 +11,30 @@ import java.util.Scanner;
 
 public class RequestHandler implements Runnable
 {
+  //define type enum
+  enum ReqType { HTTP, HTTPS; }
 
   //class variables
   private Socket clientSocket;
   private Socket serverSocket;
+  private ReqType type;
+  private int port;
 
   //constants
   public static final String SUCCESS_STATUS = "HTTP/1.1 200 Connection established\r\n\r\n";
-  public static final String FAILURE_STATUS = "HTTP/1.1 400 Bad request";
+  public static final String FORBIDDEN_STATUS = "HTTP/1.1 403 Access forbidden\r\n\r\n";
   public static final int HTTP_PORT = 80;
 
   /**
-   * Constructor. Creates object and initialises clientSocket
+   * Constructor. Creates object and initialises clientSocket, type to HTTP (i.e. not secure) by default and port set to HTTP_PORT by default as well
    *
    * @param clientSocket: The socket through which the client sent a request
    */
    RequestHandler(Socket clientSocket)
    {
      this.clientSocket = clientSocket;
+     this.type = ReqType.HTTP;
+     this.port = HTTP_PORT;
    }
 
 
@@ -38,31 +45,48 @@ public class RequestHandler implements Runnable
     */
    private void processRequest()
    {
-     //Get url name of request, i.e. url client wants to connect to
-     String[] reqStuff = getHTTPMethodHostReq();
-     System.out.println("New request:\n" + reqStuff[2]);
+     //Get method, host, and full request. Also change port and type depending on if the request is an https or http one
+     String[] reqStuff = getMethodHostReq();
      String method = reqStuff[0];
      String hostName = reqStuff[1];
-     boolean blocked = false;
+     String request = reqStuff[2];
+     System.out.println("New " + type + " request:\n" + request);
 
+     //check if host is blocked
+     boolean blocked = false;
      if(ManagementConsole.blocked(hostName))
      {
+       try{
+         DataOutputStream outputStream = new DataOutputStream(clientSocket.getOutputStream());
+         outputStream.writeUTF(RequestHandler.FORBIDDEN_STATUS);
+         outputStream.flush();
+       }
+       catch(Exception e) { e.printStackTrace(); }
        System.out.println("Client with address " + clientSocket.getRemoteSocketAddress() + " tried to access " + hostName + "!");
-       this.shutDown();
-       return;
+       this.shutDown(); //close client socket connection
+       return; //end request thread
      }
 
      //Connect to appropriate server and send status message to client
      try
      {
        //open connection to server
-       serverSocket = new Socket(hostName, RequestHandler.HTTP_PORT);
+       serverSocket = new Socket(hostName, this.port);
 
        //send client request to server
        DataOutputStream outputStream;
        outputStream = new DataOutputStream(this.serverSocket.getOutputStream());
-       outputStream.writeBytes(reqStuff[2]);
+       outputStream.writeBytes(request);
        outputStream.flush();
+
+       if(type == ReqType.HTTPS)
+       {
+         outputStream = new DataOutputStream(this.clientSocket.getOutputStream());
+         outputStream.writeUTF(RequestHandler.SUCCESS_STATUS);
+         outputStream.flush();
+         this.shutDown();
+         return;
+       }
 
        //get response from server in response to query
        String response = getHTTPResponse();
@@ -76,7 +100,6 @@ public class RequestHandler implements Runnable
      {
        System.out.println("Could not connect to actual server :( \n" +
        "Check if you entered the url correctly!!");
-       e.printStackTrace();
      }
 
      System.out.println("Socket request touchdown! :D");
@@ -86,13 +109,13 @@ public class RequestHandler implements Runnable
 
 
    /**
-    * Finds out the method, host and request from the input stream of the clientSocket, for HTTP requests.
+    * Finds out the method, host and request from the input stream of the clientSocket, for HTTP/HTTPS requests. Also manages class variables depending on the type of request (http/s)
     *
     * @return: String array of the method, host name and the request
     */
-   private String[] getHTTPMethodHostReq()
+   private String[] getMethodHostReq()
    {
-     String[] resulArr = new String[3]; //will contain method, host name, req
+     String[] reqStuff = new String[3]; //will contain method, host name, req
      String requestMessage = ""; //will contain entire request message
 
      //get method and hostName from HTTP request
@@ -102,11 +125,11 @@ public class RequestHandler implements Runnable
 
        //get method
        requestMessage = inputStream.readLine() + "\r\n"; //get first line of req
-       resulArr[0] = requestMessage.substring(0, requestMessage.indexOf(' '));
+       reqStuff[0] = requestMessage.substring(0, requestMessage.indexOf(' '));
 
        //get rest of message
-       String restOfMessage = getHTTPRequest(resulArr[0]);
-       resulArr[1] = restOfMessage.substring(6, restOfMessage.indexOf("\r\n")); //get the name of the host
+       String restOfMessage = getHTTPRequest(reqStuff[0]);
+       reqStuff[1] = restOfMessage.substring(6, restOfMessage.indexOf("\r\n")); //get the name of the host
        requestMessage += restOfMessage; //update request message
      }
 
@@ -116,9 +139,18 @@ public class RequestHandler implements Runnable
        e.printStackTrace();
      }
 
-     resulArr[2] = requestMessage;
+     //change variables if it's an https request, by checking what method is
+     if(reqStuff[0].equals("CONNECT"))
+     {
+       String[] hostAndPort = reqStuff[1].split(":"); //split host and port
+       reqStuff[1] = hostAndPort[0]; //first part is host
+       this.port = Integer.parseInt(hostAndPort[1]); //second part is port num
+       this.type = ReqType.HTTPS; //type is an HTTPS request
+     }
 
-     return resulArr;
+     reqStuff[2] = requestMessage;
+
+     return reqStuff;
    }
 
 
@@ -206,7 +238,7 @@ public class RequestHandler implements Runnable
 
 
    /**
-    * Closes the client and server sockets, if initialised and still open
+    * Closes the client and server socket connections
     */
    private void shutDown()
    {

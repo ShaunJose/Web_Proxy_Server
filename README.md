@@ -6,7 +6,9 @@ An implementation of a web proxy server (acting as an intermediary between a cli
 
 
 ### Tools used
-1. curl
+1. JVM (for Java code)
+
+2. curl
 
 
 ### Instructions:

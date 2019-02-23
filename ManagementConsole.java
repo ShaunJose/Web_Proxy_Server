@@ -1,5 +1,6 @@
 /* author: Shaun Jose
    github: github.com/ShaunJose
+   Class Description: Maintains a blocked list and listens to the manager's requests to block urls, list blocked urls or shut down the proxy
 */
 
 //imports

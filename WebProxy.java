@@ -1,5 +1,6 @@
 /* author: Shaun Jose
    github: github.com/ShaunJose
+   Class Description: Creates a new thread for all client requests, and handles the base socket
 */
 
 //imports
@@ -41,14 +42,14 @@ public class WebProxy implements Runnable
   {
     try
     {
-      System.out.println("Listening on port " + this.port + "...");
+      System.out.println("Listening on port " + this.port + "...\n");
 
       do
       {
         handleRequest(serverSocket.accept());
       } while(this.open);
     }
-    
+
     catch(Exception e)
     {
       System.out.println("Not accepting any more client requests!");
