@@ -24,6 +24,7 @@ public class RequestHandler implements Runnable
   public static final String SUCCESS_STATUS = "HTTP/1.1 200 Connection established\r\n\r\n";
   public static final String FORBIDDEN_STATUS = "HTTP/1.1 403 Access forbidden\r\n\r\n";
   public static final int HTTP_PORT = 80;
+  public static final int MAX_BYTES = 100000;
 
   /**
    * Constructor. Creates object and initialises clientSocket, type to HTTP (i.e. not secure) by default and port set to HTTP_PORT by default as well
@@ -89,13 +90,17 @@ public class RequestHandler implements Runnable
          outputStream.writeUTF(RequestHandler.SUCCESS_STATUS);
          outputStream.flush();
 
-         //listen to server on another thread
-         ServerListenHTTPS serverListener = new ServerListenHTTPS(clientSocket, serverSocket);
-         Thread serverThread = new Thread(serverListener);
-         serverThread.start();
-         //listen to client using the current thread
+         //listen to client on another thread
          ClientListenHTTPS clientListener = new ClientListenHTTPS(clientSocket, serverSocket);
-         clientListener.listenAndSend();
+         Thread clientThread = new Thread(clientListener);
+         clientThread.start();
+         //listen to server using the current thread
+         ServerListenHTTPS serverListener = new ServerListenHTTPS(clientSocket, serverSocket);
+
+         serverListener.listenAndSend();
+         //wait until server is done too
+         while(clientThread.isAlive())
+         {}
        }
        else //if req is http, then send response once and relax :)
        {
@@ -143,6 +148,8 @@ public class RequestHandler implements Runnable
        //get rest of message
        String restOfMessage = getHTTPRequest(reqStuff[0]);
        reqStuff[1] = restOfMessage.substring(6, restOfMessage.indexOf("\r\n")); //get the name of the host
+       if(reqStuff[0].equals("CONNECT"))
+        reqStuff[1] = requestMessage.substring(9, requestMessage.lastIndexOf(' '));
        requestMessage += restOfMessage; //update request message
      }
 
@@ -157,7 +164,9 @@ public class RequestHandler implements Runnable
      {
        String[] hostAndPort = reqStuff[1].split(":"); //split host and port
        reqStuff[1] = hostAndPort[0]; //first part is host
-       this.port = Integer.parseInt(hostAndPort[1]); //second part is port num
+       System.out.println(hostAndPort[0]);
+       System.out.println(hostAndPort[1]);
+       // this.port = Integer.valueOf(hostAndPort[1]); //second part is port num
        this.type = ReqType.HTTPS; //type is an HTTPS request
      }
 

@@ -8,7 +8,7 @@ import java.net.Socket;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
-class ServerListenHTTPS implements Runnable
+class ServerListenHTTPS
 {
   //class variables
   private DataInputStream serverIn;
@@ -40,19 +40,35 @@ class ServerListenHTTPS implements Runnable
    *
    * @return: None
    */
-  private void listenAndSend()
+  public void listenAndSend()
   {
-    System.out.println("Hi from le server!");
-  }
+    //set up array where you storing the bytes
+    byte[] messageBytes = new byte[RequestHandler.MAX_BYTES];
+    int ret_val; // return value from the read function
+    boolean serverSending = true;
+    int ctr = 0;
 
-  /**
-   * Thread starts from here. This function calls processRequest
-   *
-   * @return: None
-   */
-  @Override
-  public void run()
-  {
-    listenAndSend();
+    try
+    {
+      //get bytes from server and send to client
+      while(serverSending)
+      {
+        System.out.println("Server: " + ctr++);
+        ret_val = serverIn.read(messageBytes); //get message and return value
+        serverSending = ret_val != -1; //update the serverSending boolean
+        //send the client the bytes if there are bytes to send
+        if(serverSending)
+        {
+          clientOut.write(messageBytes, 0, ret_val);
+          clientOut.flush(); //flush it out
+        }
+      }
+    }
+
+    catch(Exception e)
+    {
+      e.printStackTrace();
+    }
+
   }
 }
