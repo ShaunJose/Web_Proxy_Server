@@ -260,8 +260,8 @@ class ManagementConsole
           System.out.println("This URL has already been blocked.");
         //block the URL
         else
-        {
-          blockedURLs.add(input);
+        { //hostName and not entire url
+          blockedURLs.add(input.substring(input.indexOf("//") + 2));
           System.out.println("Blocked");
         }
       }
@@ -280,8 +280,8 @@ class ManagementConsole
           System.out.println("This URL is not blocked.");
         //block the URL
         else
-        {
-          blockedURLs.remove(input);
+        { //hostName and not entire url
+          blockedURLs.remove(input.substring(input.indexOf("//") + 2));
           System.out.println("Unblocked");
         }
       }
@@ -460,8 +460,8 @@ class ManagementConsole
    */
   public static boolean blocked(String url)
   {
-    url = formatURL(url);
+    url = formatURL(url); //to ensure that is has http:// or https://
 
-    return blockedURLs.contains(url);
+    return blockedURLs.contains(url.substring(url.indexOf("//") + 2));
   }
 }

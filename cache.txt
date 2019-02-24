@@ -1,3 +1,116 @@
+http://facebook.com
+HTTP/1.1 400 Bad Request
+Content-Type: text/html; charset=utf-8
+Date: Sun, 24 Feb 2019 22:01:11 GMT
+Connection: close
+Content-Length: 2959
+
+<!DOCTYPE html>
+<html lang="en" id="facebook">
+  <head>
+    <title>Facebook | Error</title>
+    <meta charset="utf-8">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="cache-control" content="no-store">
+    <meta http-equiv="cache-control" content="max-age=0">
+    <meta http-equiv="expires" content="-1">
+    <meta http-equiv="pragma" content="no-cache">
+    <meta name="robots" content="noindex,nofollow">
+    <style>
+      html, body {
+        color: #141823;
+        background-color: #e9eaed;
+        font-family: Helvetica, Lucida Grande, Arial,
+                     Tahoma, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        text-align: center;
+      }
+
+      #header {
+        height: 30px;
+        padding-bottom: 10px;
+        padding-top: 10px;
+        text-align: center;
+      }
+
+      #icon {
+        width: 30px;
+      }
+
+      h1 {
+        font-size: 18px;
+      }
+
+      p {
+        font-size: 13px;
+      }
+
+      #footer {
+        border-top: 1px solid #ddd;
+        color: #9197a3;
+        font-size: 12px;
+        padding: 5px 8px 6px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="header">
+      <a href="//www.facebook.com/">
+        <img id="icon" src="//static.facebook.com/images/logos/facebook_2x.png" />
+      </a>
+    </div>
+    <div id="core">
+      <h1 id="sorry">Sorry, something went wrong.</h1>
+      <p id="promise">
+        We're working on it and we'll get it fixed as soon as we can.
+      </p>
+      <p id="back-link">
+        <a id="back" href="//www.facebook.com/">Go Back</a>
+      </p>
+      <div id="footer">
+        Facebook
+        <span id="copyright">
+          &copy; 2018
+        </span>
+        <span id="help-link">
+          &#183;
+          <a id="help" href="//www.facebook.com/help/">Help Center</a>
+        </span>
+      </div>
+    </div>
+    <script>
+      document.getElementById('back').onclick = function() {
+        if (history.length > 1) {
+          history.back();
+          return false;
+        }
+      };
+
+      // Adjust the display based on the window size
+      if (window.innerHeight < 80 || window.innerWidth < 80) {
+        // Blank if window is too small
+        document.body.style.display = 'none';
+      };
+      if (window.innerWidth < 200 || window.innerHeight < 150) {
+        document.getElementById('back-link').style.display = 'none';
+        document.getElementById('help-link').style.display = 'none';
+      };
+      if (window.innerWidth < 200) {
+        document.getElementById('sorry').style.fontSize = '16px';
+      };
+      if (window.innerWidth < 150) {
+        document.getElementById('promise').style.display = 'none';
+      };
+      if (window.innerHeight < 150) {
+        document.getElementById('sorry').style.margin = '4px 0 0 0';
+        document.getElementById('sorry').style.fontSize = '14px';
+        document.getElementById('promise').style.display = 'none';
+      };
+    </script>
+  </body>
+</html>
+---***^***^^^^^^***^***---
 http://guimp.com
 HTTP/1.1 200 OK
 Date: Sun, 24 Feb 2019 15:33:31 GMT
@@ -8,23 +121,4 @@ Content-Length: 1783
 Content-Type: text/html
 
 <!doctype html public "-//W3C//DTD HTML 4.0 Transitional//EN"><!-- smallest, small, tiny web site --><html><head><title>smallest website in the world! guimp.com</title><meta name="allow-search" content="yes"><meta name="searchtitle"  content="smallest, small, tiny web site"><meta name="description" content="Smaller than a small fingernail, guimp.com, the world's smallest website measures only 18 by 18 pixels yet is packed full of fun projects including pong, pacman, space invaders, pinball, a blog and pixel art."><meta name="keywords" content="smallest, small, tiny, design, Alan Outten, game design, wap, PDA"><meta name="revisit-after" content="14 days"><meta name="ROBOTS" content="index, follow"><meta name="audience" content="All"><meta name="content-language" content="English"><meta name="author" content="Alan Outten"><meta name="abstract" content="Smaller than a small fingernail, guimp.com, the world's smallest website measures only 18 by 18 pixels"><link rel="icon" href="favicon.ico"><link rel="SHORTCUT ICON" href="favicon.ico"><script language="javascript" src="script.js"></script></head><body bgcolor="#333366" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0" onload="setStatus('');"><table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%"><tr><td align="center" valign="middle"><table border="1" cellpadding="0" cellspacing="0"><tr><td bgcolor="#FFFFFF"><table border="0" cellpadding="0" cellspacing="0"><tr><td><a href="home.html" onMouseOver="return setStatus('Walk on up!');" onMouseOut="return setStatus('');"><img src="images/sc_gertolf_drop.gif" width="18" height="18" border="0" alt="Splash page! Guimp by Alan Outten. Click to enter..." name=""></a></td></tr></table></td></tr></table></td></tr></table></body></html>
----***^***^^^^^^***^***---
-http://detectportal.firefox.com
-HTTP/1.0 400 Bad Request
-Server: AkamaiGHost
-Mime-Version: 1.0
-Content-Type: text/html
-Content-Length: 216
-Expires: Sun, 24 Feb 2019 20:47:00 GMT
-Date: Sun, 24 Feb 2019 20:47:00 GMT
-Connection: close
-
-<HTML><HEAD>
-<TITLE>Bad Request</TITLE>
-</HEAD><BODY>
-<H1>Bad Request</H1>
-Your browser sent a request that this server could not understand.<P>
-Reference&#32;&#35;7&#46;3c0178c1&#46;1551041220&#46;0
-</BODY>
-</HTML>
 ---***^***^^^^^^***^***---

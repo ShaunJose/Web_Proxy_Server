@@ -1,1 +1,2 @@
-http://example.com
+facebook.com
+example.com
