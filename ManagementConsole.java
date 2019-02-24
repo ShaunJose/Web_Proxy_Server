@@ -11,6 +11,7 @@ import java.lang.Thread;
 import java.util.ArrayList;
 import java.io.File;
 import java.io.PrintWriter;
+import java.util.Iterator;
 
 class ManagementConsole
 {
@@ -18,6 +19,7 @@ class ManagementConsole
   private static final int DEFAULT_PORT = 4000;
   private static final int CACHE_LIMIT = 2;
   private static final String CACHE_FILE = "cache.txt";
+  private static final String BLOCKED_FILE = "blocked.txt";
   private static final String FILE_DELIMITER = "---***^***^^^^^^***^***---";
 
   //class variables
@@ -37,6 +39,9 @@ class ManagementConsole
   {
     //initialise the cache
     initCache();
+
+    //initialises the set of blocked URLs
+    initBlockedSet();
 
     //start managing the server and blocked lists
     start_managing();
@@ -116,8 +121,8 @@ class ManagementConsole
     //initialise variables used to write cache
     PrintWriter cacheWriter = null;
     try
-    { cacheWriter = new PrintWriter(CACHE_FILE, "UTF-8");}
-    catch(Exception e) { e.printStackTrace(); return;}
+    { cacheWriter = new PrintWriter(CACHE_FILE, "UTF-8"); }
+    catch(Exception e) { e.printStackTrace(); return; }
 
     for(int i = 0; i < cachedURLs.size(); i++)
     {
@@ -139,6 +144,69 @@ class ManagementConsole
 
 
   /**
+   */
+  private static void initBlockedSet()
+  {
+    try
+    {
+      File blocked = new File(BLOCKED_FILE); //file path
+      if(blocked.exists()) //if file exists, read from file
+      {
+        readFromBlocked(blocked);
+      }
+      else //if it doesn't exist create new empty blocked file
+      {
+        blocked.createNewFile();
+      }
+    }
+    catch(Exception e)
+    {
+      e.printStackTrace();
+    }
+  }
+
+
+  /**
+   */
+  private static void readFromBlocked(File blocked)
+  {
+    //initialise vars used for this task in loop
+    Scanner sc;
+    try
+    { sc = new Scanner(blocked);} catch(Exception e){ e.printStackTrace();return; }
+
+    while(sc.hasNextLine())
+    {
+      String blockedURL = sc.nextLine();
+      blockedURLs.add(blockedURL);
+    }
+
+  }
+
+
+  /**
+   */
+  private static void saveBlockedList()
+  {
+    //initialise variables used to write cache
+    PrintWriter blockedWriter = null;
+    try
+    { blockedWriter = new PrintWriter(BLOCKED_FILE, "UTF-8"); }
+    catch(Exception e) { e.printStackTrace(); return; }
+    Iterator blockedIter = blockedURLs.iterator();
+
+    //save blocked urls to file
+    while(blockedIter.hasNext())
+    {
+      String url = (String) blockedIter.next();
+      blockedWriter.println(url);
+    }
+
+    blockedWriter.close();
+  }
+
+
+  /**
    * Manages blockedUrls set, stores it in a file, and calls the        start_listening() method to start running a server
    *
    * @return: None
@@ -148,8 +216,9 @@ class ManagementConsole
     //Instructions for managing urls
     System.out.println("Instructions:");
     System.out.println("1. Enter 'block URL_name' to block a URL");
-    System.out.println("2. Enter 'list blocked' to check which URLs are blocked");
-    System.out.println("3. Enter 'e' to indicate that you want to exit");
+    System.out.println("2. Enter 'unblock URL_name' to unblock a URL");
+    System.out.println("3. Enter 'list blocked' to check which URLs are blocked");
+    System.out.println("4. Enter 'e' to indicate that you want to exit");
 
     //make Web proxy server run on another thread
     WebProxy proxy = new WebProxy(DEFAULT_PORT);
@@ -175,7 +244,7 @@ class ManagementConsole
       else if(input.equals("list blocked"))
         displayHashSet(blockedURLs);
 
-      //Case 3: adding a blocked url if it isn't already blocked
+      //Case 3: Blocking a url
       else if(input.length() > 6 && input.substring(0, 6).equals("block "))
       {
         //get url part of input
@@ -193,18 +262,38 @@ class ManagementConsole
         else
         {
           blockedURLs.add(input);
-          System.out.println("Done");
+          System.out.println("Blocked");
         }
       }
 
-      //Case 4: Invalid input
+      //Case 4: Unblocking a url
+      else if(input.length() > 8 && input.substring(0, 8).equals("unblock "))
+      {
+        //get url part of input
+        input = formatURL(input.substring(8));
+
+        //if URL is invalid
+        if(!isValidUrl(input))
+          System.out.println("This URL is invalid");
+        //if URL is not blocked
+        else if(!blocked(input))
+          System.out.println("This URL is not blocked.");
+        //block the URL
+        else
+        {
+          blockedURLs.remove(input);
+          System.out.println("Unblocked");
+        }
+      }
+      //Case 5: Invalid input
       else
         System.out.println("Sorry, I didn't get that");
 
-    }
+      }
 
-    //save cache, and shut down the web proxy and all request threads
+    //save cache, blockedURLs and shut down the web proxy completely
     saveCache();
+    saveBlockedList();
     proxy.shutDown();
 
     //end the thread
