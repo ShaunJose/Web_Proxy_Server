@@ -44,24 +44,24 @@ class ClientListenHTTPS implements Runnable
   {
     //set up array where you storing the bytes
     byte[] messageBytes = new byte[RequestHandler.MAX_BYTES];
-    int ret_val; // return value from the read function
+    int retVal; // return value from the read function
     boolean clientSending = true;
-    int ctr = 0;
+    int ctr = 1; //iteration counter
 
     try
     {
       //get bytes from client and send to server
       while(clientSending)
       {
-        System.out.println("Client: " + ctr++);
-        ret_val = clientIn.read(messageBytes); //get message and return value
-        clientSending = ret_val != -1; //update the clientSending boolean
+        retVal = clientIn.read(messageBytes); //get message and return value
+        clientSending = retVal != -1; //update the clientSending boolean
         //send the server the bytes if there are bytes to send
         if(clientSending)
         {
-          serverOut.write(messageBytes, 0, ret_val);
+          serverOut.write(messageBytes, 0, retVal);
           serverOut.flush(); //flush it out
         }
+        System.out.println("Client Iteration: " + ctr++); //print iteration
       }
     }
 

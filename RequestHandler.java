@@ -21,10 +21,10 @@ public class RequestHandler implements Runnable
   private int port;
 
   //constants
-  public static final String SUCCESS_STATUS = "HTTP/1.1 200 Connection established\r\n\r\n";
+  public static final String SUCCESS_STATUS = "HTTP/1.1 200 Connection established\n\r\n";
   public static final String FORBIDDEN_STATUS = "HTTP/1.1 403 Access forbidden\r\n\r\n";
   public static final int HTTP_PORT = 80;
-  public static final int MAX_BYTES = 100000;
+  public static final int MAX_BYTES = 4096;
 
   /**
    * Constructor. Creates object and initialises clientSocket, type to HTTP (i.e. not secure) by default and port set to HTTP_PORT by default as well
@@ -54,7 +54,6 @@ public class RequestHandler implements Runnable
      System.out.println("New " + type + " request:\n" + request);
 
      //check if host is blocked
-     boolean blocked = false;
      if(ManagementConsole.blocked(hostName))
      {
        try { //send FORBIDDEN_STATUS to client
@@ -82,23 +81,24 @@ public class RequestHandler implements Runnable
        //open connection to server
        serverSocket = new Socket(hostName, this.port);
 
-       //send client request to server if not retrieved from cache
+       //send client HTTP request to server if not retrieved from cache
        DataOutputStream outputStream;
-       if(response == null)
+       if(type == ReqType.HTTP && response == null)
        {
          outputStream = new DataOutputStream(this.serverSocket.getOutputStream());
-         outputStream.writeBytes(request);
+         outputStream.writeUTF(request);
          outputStream.flush();
        }
 
        // set up client output stream
-       outputStream = new DataOutputStream(this.clientSocket.getOutputStream());
+       outputStream = new DataOutputStream(clientSocket.getOutputStream());
 
        //if req is https, listen to client and server until they're both done
        if(type == ReqType.HTTPS)
        {
          //send success message to client!
-         outputStream.writeUTF(RequestHandler.SUCCESS_STATUS);
+         outputStream = new DataOutputStream(clientSocket.getOutputStream());
+         outputStream.writeBytes(RequestHandler.SUCCESS_STATUS);
          outputStream.flush();
 
          //listen to client on another thread
@@ -106,12 +106,9 @@ public class RequestHandler implements Runnable
          Thread clientThread = new Thread(clientListener);
          clientThread.start();
          //listen to server using the current thread
-         ServerListenHTTPS serverListener = new ServerListenHTTPS(clientSocket, serverSocket);
+         ServerListenHTTPS serverListener = new ServerListenHTTPS(clientSocket, serverSocket, clientThread);
 
          serverListener.listenAndSend();
-         //wait until server is done too
-         while(clientThread.isAlive())
-         {}
        }
        else //if req is http, then send response once and relax :)
        {
@@ -158,13 +155,15 @@ public class RequestHandler implements Runnable
 
        //get method
        requestMessage = inputStream.readLine() + "\r\n"; //get first line of req
-       reqStuff[0] = requestMessage.substring(0, requestMessage.indexOf(' '));
+       int firstSpace = requestMessage.indexOf(' ');
+       reqStuff[0] = requestMessage.substring(0, firstSpace);
 
-       //get rest of message
+       //get rest of message and hostName
        String restOfMessage = getHTTPRequest(reqStuff[0]);
-       reqStuff[1] = restOfMessage.substring(6, restOfMessage.indexOf("\r\n")); //get the name of the host
+       reqStuff[1] = restOfMessage.substring(6, restOfMessage.indexOf("\r\n"));
+
        if(reqStuff[0].equals("CONNECT"))
-         reqStuff[1] = requestMessage.substring(9, requestMessage.lastIndexOf(' '));
+        reqStuff[1] = requestMessage.substring(8, requestMessage.lastIndexOf(' '));
        requestMessage += restOfMessage; //update request message
      }
 
@@ -179,9 +178,8 @@ public class RequestHandler implements Runnable
      {
        String[] hostAndPort = reqStuff[1].split(":"); //split host and port
        reqStuff[1] = hostAndPort[0]; //first part is host
-       System.out.println(hostAndPort[0]);
-       System.out.println(hostAndPort[1]);
-       // this.port = Integer.valueOf(hostAndPort[1]); //second part is port num
+       System.out.println(requestMessage);
+       this.port = Integer.parseInt(hostAndPort[1]); //second part is port num
        this.type = ReqType.HTTPS; //type is an HTTPS request
      }
 

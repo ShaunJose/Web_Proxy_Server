@@ -13,6 +13,7 @@ class ServerListenHTTPS
   //class variables
   private DataInputStream serverIn;
   private DataOutputStream clientOut;
+  private Thread clientThread;
 
   /**
    * Constructor. initialises class variables (in/out streams) using sockets
@@ -20,12 +21,13 @@ class ServerListenHTTPS
    * @param clientSock: Socket through which the client is connected to proxy
    * @param serverSock: Socket through which the proxy is connected to server
    */
-  ServerListenHTTPS(Socket clientSock, Socket serverSock)
+  ServerListenHTTPS(Socket clientSock, Socket serverSock, Thread clientThread)
   {
     try
     {
       this.serverIn = new DataInputStream(serverSock.getInputStream());
       this.clientOut = new DataOutputStream(clientSock.getOutputStream());
+      this.clientThread = clientThread;
     }
     catch(Exception e)
     {
@@ -44,25 +46,29 @@ class ServerListenHTTPS
   {
     //set up array where you storing the bytes
     byte[] messageBytes = new byte[RequestHandler.MAX_BYTES];
-    int ret_val; // return value from the read function
+    int retVal; // return value from the read function
     boolean serverSending = true;
-    int ctr = 0;
+    int ctr = 1; //iteration counter
 
     try
     {
       //get bytes from server and send to client
       while(serverSending)
       {
-        System.out.println("Server: " + ctr++);
-        ret_val = serverIn.read(messageBytes); //get message and return value
-        serverSending = ret_val != -1; //update the serverSending boolean
+        retVal = serverIn.read(messageBytes); //get message and return value
+        serverSending = retVal != -1; //update the serverSending boolean
         //send the client the bytes if there are bytes to send
         if(serverSending)
         {
-          clientOut.write(messageBytes, 0, ret_val);
+          clientOut.write(messageBytes, 0, retVal);
           clientOut.flush(); //flush it out
         }
+        System.out.println("Server Iteration: " + ctr++); //print iteration
       }
+
+      //wait until client is done
+      while(clientThread.isAlive())
+      {}
     }
 
     catch(Exception e)
