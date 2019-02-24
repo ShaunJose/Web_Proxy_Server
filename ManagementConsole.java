@@ -1,6 +1,6 @@
 /* author: Shaun Jose
    github: github.com/ShaunJose
-   Class Description: Maintains a blocked list and listens to the manager's requests to block urls, list blocked urls or shut down the proxy
+   Class Description: Maintains a blocked list, cache and listens to the manager's requests to block urls, list blocked urls or shut down the proxy
 */
 
 //imports
@@ -8,14 +8,18 @@ import java.net.URL;
 import java.util.HashSet;
 import java.util.Scanner;
 import java.lang.Thread;
+import java.util.ArrayList;
 
 class ManagementConsole
 {
   //constants
   private static final int DEFAULT_PORT = 4000;
+  private static final int CACHE_LIMIT = 2;
 
   //class variables
   private static HashSet<String> blockedURLs = new HashSet<String>();
+  private static ArrayList<String> cachedURLs = new ArrayList<String>();
+  private static ArrayList<String> cachedResponses = new ArrayList<String>();
 
 
   /**
@@ -170,6 +174,90 @@ class ManagementConsole
       url = "http://" + url; //might not be secure, so only http
 
     return url;
+  }
+
+
+  /**
+   * Checks if a url has been cached and return true or false indicating whether it exists or not
+   *
+   * @param url: The url that you want to check has been cached
+   *
+   * @return: true if url is cached, else false
+   */
+  public static boolean isCached(String url)
+  {
+    url = formatURL(url);
+
+    return cachedURLs.contains(url);
+  }
+
+
+  /**
+   * Gets a response for a cached url from the cache. Null if not cached
+   *
+   * @param url: The url whose response is needed
+   *
+   * @return: Cached response fro url, or null if doesnt exist in cache
+   */
+  public static String getFromCache(String url)
+  {
+    url = formatURL(url);
+
+    if(!isCached(url)) //if in cache
+      return null;
+
+    int index = cachedURLs.indexOf(url);
+    return cachedResponses.get(index);
+  }
+
+
+  /**
+   * Saves url and response to cache, as most recently added cache. Recursive function
+   *
+   * @param url: The url whose repsonse needs to be cached
+   * @param response: The response which needs to be cached
+   *
+   * @return: None
+   */
+  public static void saveToCache(String url, String response)
+  {
+    url = formatURL(url);
+
+    if(isCached(url)) //if already cached, replace as Newest elements!
+    {
+      int index = cachedURLs.indexOf(url);
+      removeFromCache(index);
+      saveToCache(url, response); //recursively save it
+      return; //end
+    }
+
+    if(cachedURLs.size() >= CACHE_LIMIT) //if cache is full, remove LRUs
+    {
+      removeFromCache(0); //remove least recently used element
+      saveToCache(url, response); //recursively add
+      return; //end
+    }
+
+    //reaches here if not duplicate and cache not full
+    cachedURLs.add(url);
+    cachedResponses.add(response);
+  }
+
+
+  /**
+   * Delete cahced element at index from cached urls and cahced responses
+   *
+   * @param index: index at which elements need to be deleted
+   *
+   * @return: None
+   */
+  private static void removeFromCache(int index)
+  {
+    if(index < CACHE_LIMIT) //private arr, so trusting that limit isn't crossed
+    {
+      cachedURLs.remove(index);
+      cachedResponses.remove(index);
+    }
   }
 
 

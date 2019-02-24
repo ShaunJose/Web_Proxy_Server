@@ -68,17 +68,28 @@ public class RequestHandler implements Runnable
        return; //end request thread
      }
 
+     //check if it's cached (only http can be cached)
+     String response = null;
+     if(type == ReqType.HTTP && ManagementConsole.isCached(hostName))
+     {
+       response = ManagementConsole.getFromCache(hostName);
+       System.out.println("Cache Hit!\n");
+     }
+
      //Connect to appropriate server and send status message to client
      try
      {
        //open connection to server
        serverSocket = new Socket(hostName, this.port);
 
-       //send client request to server
+       //send client request to server if not retrieved from cache
        DataOutputStream outputStream;
-       outputStream = new DataOutputStream(this.serverSocket.getOutputStream());
-       outputStream.writeBytes(request);
-       outputStream.flush();
+       if(response == null)
+       {
+         outputStream = new DataOutputStream(this.serverSocket.getOutputStream());
+         outputStream.writeBytes(request);
+         outputStream.flush();
+       }
 
        // set up client output stream
        outputStream = new DataOutputStream(this.clientSocket.getOutputStream());
@@ -104,8 +115,12 @@ public class RequestHandler implements Runnable
        }
        else //if req is http, then send response once and relax :)
        {
-         //get response from server in response to query
-         String response = getHTTPResponse();
+         if(response == null) //if not retrieved from cache
+           response = getHTTPResponse();//get response from server in response to query
+
+         //save response to cache or update it's position for LRU policy
+         ManagementConsole.saveToCache(hostName, response);
+
          //send response to client
          outputStream.writeUTF(response);
          outputStream.flush();
@@ -149,7 +164,7 @@ public class RequestHandler implements Runnable
        String restOfMessage = getHTTPRequest(reqStuff[0]);
        reqStuff[1] = restOfMessage.substring(6, restOfMessage.indexOf("\r\n")); //get the name of the host
        if(reqStuff[0].equals("CONNECT"))
-        reqStuff[1] = requestMessage.substring(9, requestMessage.lastIndexOf(' '));
+         reqStuff[1] = requestMessage.substring(9, requestMessage.lastIndexOf(' '));
        requestMessage += restOfMessage; //update request message
      }
 
