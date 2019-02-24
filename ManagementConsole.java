@@ -127,7 +127,7 @@ class ManagementConsole
 
       //save response
       String response = cachedResponses.get(i);
-      cacheWriter.println(response);
+      cacheWriter.print(response);
 
       //delimiter!
       cacheWriter.println(FILE_DELIMITER);

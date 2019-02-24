@@ -78,11 +78,16 @@ public class WebProxy implements Runnable
 
 
    /**
-    * //TODO: ADD FUNC DESCR HERE
+    * Waits for all request threads to end, then closes the base proxy socket
+    *
+    * @return: None
     */
    public void shutDown()
    {
-     //TODO: close SERVER SOCKET HERE, along with all request threads
+     //waiting for all the request threads to end
+     for(Thread reqThread: requestThreads)
+       while(reqThread.isAlive());
+
      this.open = false;
 
      try

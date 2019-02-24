@@ -1,13 +1,12 @@
 http://www.example.com
 HTTP/1.1 200 OK
-Accept-Ranges: bytes
 Cache-Control: max-age=604800
 Content-Type: text/html; charset=UTF-8
-Date: Sun, 24 Feb 2019 15:11:20 GMT
-Etag: "1541025663"
-Expires: Sun, 03 Mar 2019 15:11:20 GMT
+Date: Sun, 24 Feb 2019 15:32:04 GMT
+Etag: "1541025663+ident"
+Expires: Sun, 03 Mar 2019 15:32:04 GMT
 Last-Modified: Fri, 09 Aug 2013 23:54:35 GMT
-Server: ECS (dcb/7F84)
+Server: ECS (dcb/7EC6)
 Vary: Accept-Encoding
 X-Cache: HIT
 Content-Length: 1270
@@ -62,12 +61,10 @@ Content-Length: 1270
 </div>
 </body>
 </html>
-
-
 ---***^***^^^^^^***^***---
 http://guimp.com
 HTTP/1.1 200 OK
-Date: Sun, 24 Feb 2019 15:11:40 GMT
+Date: Sun, 24 Feb 2019 15:33:31 GMT
 Server: Apache
 Last-Modified: Thu, 23 Nov 2017 15:54:15 GMT
 Accept-Ranges: bytes
@@ -75,5 +72,4 @@ Content-Length: 1783
 Content-Type: text/html
 
 <!doctype html public "-//W3C//DTD HTML 4.0 Transitional//EN"><!-- smallest, small, tiny web site --><html><head><title>smallest website in the world! guimp.com</title><meta name="allow-search" content="yes"><meta name="searchtitle"  content="smallest, small, tiny web site"><meta name="description" content="Smaller than a small fingernail, guimp.com, the world's smallest website measures only 18 by 18 pixels yet is packed full of fun projects including pong, pacman, space invaders, pinball, a blog and pixel art."><meta name="keywords" content="smallest, small, tiny, design, Alan Outten, game design, wap, PDA"><meta name="revisit-after" content="14 days"><meta name="ROBOTS" content="index, follow"><meta name="audience" content="All"><meta name="content-language" content="English"><meta name="author" content="Alan Outten"><meta name="abstract" content="Smaller than a small fingernail, guimp.com, the world's smallest website measures only 18 by 18 pixels"><link rel="icon" href="favicon.ico"><link rel="SHORTCUT ICON" href="favicon.ico"><script language="javascript" src="script.js"></script></head><body bgcolor="#333366" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0" onload="setStatus('');"><table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%"><tr><td align="center" valign="middle"><table border="1" cellpadding="0" cellspacing="0"><tr><td bgcolor="#FFFFFF"><table border="0" cellpadding="0" cellspacing="0"><tr><td><a href="home.html" onMouseOver="return setStatus('Walk on up!');" onMouseOut="return setStatus('');"><img src="images/sc_gertolf_drop.gif" width="18" height="18" border="0" alt="Splash page! Guimp by Alan Outten. Click to enter..." name=""></a></td></tr></table></td></tr></table></td></tr></table></body></html>
-
 ---***^***^^^^^^***^***---
