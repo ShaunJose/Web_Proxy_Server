@@ -1,6 +1,6 @@
 /* author: Shaun Jose
    github: github.com/ShaunJose
-   Class Description: Maintains a blocked list and listens to the manager's requests to block urls, list blocked urls or shut down the proxy
+   Class Description: Maintains a blocked list, cache and listens to the manager's requests to block urls, list blocked urls or shut down the proxy
 */
 
 //imports
@@ -8,14 +8,22 @@ import java.net.URL;
 import java.util.HashSet;
 import java.util.Scanner;
 import java.lang.Thread;
+import java.util.ArrayList;
+import java.io.File;
+import java.io.PrintWriter;
 
 class ManagementConsole
 {
   //constants
   private static final int DEFAULT_PORT = 4000;
+  private static final int CACHE_LIMIT = 2;
+  private static final String CACHE_FILE = "cache.txt";
+  private static final String FILE_DELIMITER = "---***^***^^^^^^***^***---";
 
   //class variables
   private static HashSet<String> blockedURLs = new HashSet<String>();
+  private static ArrayList<String> cachedURLs = new ArrayList<String>();
+  private static ArrayList<String> cachedResponses = new ArrayList<String>();
 
 
   /**
@@ -27,10 +35,106 @@ class ManagementConsole
    */
   public static void main(String[] args)
   {
+    //initialise the cache
+    initCache();
+
     //start managing the server and blocked lists
     start_managing();
 
     System.out.println("We're done :D");
+  }
+
+
+  /**
+   * Create the cache file if it doesnt exist. If exists, call readFromcache to read cache contents into the cache variables
+   *
+   * @return: None
+   */
+  private static void initCache()
+  {
+    try
+    {
+      File cache = new File(CACHE_FILE); //cache path
+      if(cache.exists()) //if cache exists, read from file
+      {
+        readFromCache(cache);
+      }
+      else //if it doesn't exist create new empty cache file
+      {
+        cache.createNewFile();
+      }
+    }
+    catch(Exception e)
+    {
+      e.printStackTrace();
+    }
+
+  }
+
+
+  /**
+   * Reads from filepath into cache variables, to initialise cache vars
+   *
+   * @param cache: Filepath to cache
+   */
+  private static void readFromCache(File cache)
+  {
+    //initialise vars used for this task in loop
+    Scanner sc;
+    try
+    {sc = new Scanner(cache);} catch(Exception e){ e.printStackTrace();return; }
+    String line = "";
+
+    //read urls and responses into arrays
+    while(sc.hasNext())
+    {
+      //read url
+      line = sc.nextLine();
+      cachedURLs.add(line);
+
+      //read response
+      String response = "";
+      line = ""; //reset line
+      do
+      {
+        response += line;
+        line = sc.nextLine() + "\r\n";
+      } while (!line.equals(FILE_DELIMITER + "\r\n"));
+      cachedResponses.add(response);
+
+    }
+  }
+
+
+  /**
+   * Writes all cache contents into the file, follwing the format rules
+   *
+   * @return: None
+   */
+  private static void saveCache()
+  {
+    //initialise variables used to write cache
+    PrintWriter cacheWriter = null;
+    try
+    { cacheWriter = new PrintWriter(CACHE_FILE, "UTF-8");}
+    catch(Exception e) { e.printStackTrace(); return;}
+
+    for(int i = 0; i < cachedURLs.size(); i++)
+    {
+      //save url
+      String url = cachedURLs.get(i);
+      cacheWriter.println(url);
+
+      //save response
+      String response = cachedResponses.get(i);
+      cacheWriter.print(response);
+
+      //delimiter!
+      cacheWriter.println(FILE_DELIMITER);
+    }
+
+    cacheWriter.close();
+
   }
 
 
@@ -99,7 +203,8 @@ class ManagementConsole
 
     }
 
-    //shut down the web proxy and all request threads
+    //save cache, and shut down the web proxy and all request threads
+    saveCache();
     proxy.shutDown();
 
     //end the thread
@@ -170,6 +275,90 @@ class ManagementConsole
       url = "http://" + url; //might not be secure, so only http
 
     return url;
+  }
+
+
+  /**
+   * Checks if a url has been cached and return true or false indicating whether it exists or not
+   *
+   * @param url: The url that you want to check has been cached
+   *
+   * @return: true if url is cached, else false
+   */
+  public static boolean isCached(String url)
+  {
+    url = formatURL(url);
+
+    return cachedURLs.contains(url);
+  }
+
+
+  /**
+   * Gets a response for a cached url from the cache. Null if not cached
+   *
+   * @param url: The url whose response is needed
+   *
+   * @return: Cached response fro url, or null if doesnt exist in cache
+   */
+  public static String getFromCache(String url)
+  {
+    url = formatURL(url);
+
+    if(!isCached(url)) //if in cache
+      return null;
+
+    int index = cachedURLs.indexOf(url);
+    return cachedResponses.get(index);
+  }
+
+
+  /**
+   * Saves url and response to cache, as most recently added cache. Recursive function
+   *
+   * @param url: The url whose repsonse needs to be cached
+   * @param response: The response which needs to be cached
+   *
+   * @return: None
+   */
+  public static void saveToCache(String url, String response)
+  {
+    url = formatURL(url);
+
+    if(isCached(url)) //if already cached, replace as Newest elements!
+    {
+      int index = cachedURLs.indexOf(url);
+      removeFromCache(index);
+      saveToCache(url, response); //recursively save it
+      return; //end
+    }
+
+    if(cachedURLs.size() >= CACHE_LIMIT) //if cache is full, remove LRUs
+    {
+      removeFromCache(0); //remove least recently used element
+      saveToCache(url, response); //recursively add
+      return; //end
+    }
+
+    //reaches here if not duplicate and cache not full
+    cachedURLs.add(url);
+    cachedResponses.add(response);
+  }
+
+
+  /**
+   * Delete cahced element at index from cached urls and cahced responses
+   *
+   * @param index: index at which elements need to be deleted
+   *
+   * @return: None
+   */
+  private static void removeFromCache(int index)
+  {
+    if(index < CACHE_LIMIT) //private arr, so trusting that limit isn't crossed
+    {
+      cachedURLs.remove(index);
+      cachedResponses.remove(index);
+    }
   }
 
 
