@@ -9,12 +9,16 @@ import java.util.HashSet;
 import java.util.Scanner;
 import java.lang.Thread;
 import java.util.ArrayList;
+import java.io.File;
+import java.io.PrintWriter;
 
 class ManagementConsole
 {
   //constants
   private static final int DEFAULT_PORT = 4000;
   private static final int CACHE_LIMIT = 2;
+  private static final String CACHE_FILE = "cache.txt";
+  private static final String FILE_DELIMITER = "---***^***^^^^^^***^***---";
 
   //class variables
   private static HashSet<String> blockedURLs = new HashSet<String>();
@@ -31,10 +35,106 @@ class ManagementConsole
    */
   public static void main(String[] args)
   {
+    //initialise the cache
+    initCache();
+
     //start managing the server and blocked lists
     start_managing();
 
     System.out.println("We're done :D");
+  }
+
+
+  /**
+   * Create the cache file if it doesnt exist. If exists, call readFromcache to read cache contents into the cache variables
+   *
+   * @return: None
+   */
+  private static void initCache()
+  {
+    try
+    {
+      File cache = new File(CACHE_FILE); //cache path
+      if(cache.exists()) //if cache exists, read from file
+      {
+        readFromCache(cache);
+      }
+      else //if it doesn't exist create new empty cache file
+      {
+        cache.createNewFile();
+      }
+    }
+    catch(Exception e)
+    {
+      e.printStackTrace();
+    }
+
+  }
+
+
+  /**
+   * Reads from filepath into cache variables, to initialise cache vars
+   *
+   * @param cache: Filepath to cache
+   */
+  private static void readFromCache(File cache)
+  {
+    //initialise vars used for this task in loop
+    Scanner sc;
+    try
+    {sc = new Scanner(cache);} catch(Exception e){ e.printStackTrace();return; }
+    String line = "";
+
+    //read urls and responses into arrays
+    while(sc.hasNext())
+    {
+      //read url
+      line = sc.nextLine();
+      cachedURLs.add(line);
+
+      //read response
+      String response = "";
+      line = ""; //reset line
+      do
+      {
+        response += line;
+        line = sc.nextLine() + "\r\n";
+      } while (!line.equals(FILE_DELIMITER + "\r\n"));
+      cachedResponses.add(response);
+
+    }
+  }
+
+
+  /**
+   * Writes all cache contents into the file, follwing the format rules
+   *
+   * @return: None
+   */
+  private static void saveCache()
+  {
+    //initialise variables used to write cache
+    PrintWriter cacheWriter = null;
+    try
+    { cacheWriter = new PrintWriter(CACHE_FILE, "UTF-8");}
+    catch(Exception e) { e.printStackTrace(); return;}
+
+    for(int i = 0; i < cachedURLs.size(); i++)
+    {
+      //save url
+      String url = cachedURLs.get(i);
+      cacheWriter.println(url);
+
+      //save response
+      String response = cachedResponses.get(i);
+      cacheWriter.println(response);
+
+      //delimiter!
+      cacheWriter.println(FILE_DELIMITER);
+    }
+
+    cacheWriter.close();
+
   }
 
 
@@ -103,7 +203,8 @@ class ManagementConsole
 
     }
 
-    //shut down the web proxy and all request threads
+    //save cache, and shut down the web proxy and all request threads
+    saveCache();
     proxy.shutDown();
 
     //end the thread
