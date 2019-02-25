@@ -1,10 +1,10 @@
-http://www.example.com
+http://example.com
 HTTP/1.0 501 Not Implemented
 Content-Type: text/html
 Content-Length: 357
 Connection: close
-Date: Mon, 25 Feb 2019 17:58:16 GMT
-Server: ECSF (dcb/7F60)
+Date: Mon, 25 Feb 2019 20:23:57 GMT
+Server: ECSF (dcb/7ECB)
 
 <?xml version="1.0" encoding="iso-8859-1"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
@@ -20,7 +20,7 @@ Server: ECSF (dcb/7F60)
 ---***^***^^^^^^***^***---
 http://guimp.com
 HTTP/1.1 400 Bad Request
-Date: Mon, 25 Feb 2019 17:58:20 GMT
+Date: Mon, 25 Feb 2019 20:24:06 GMT
 Server: Apache
 Accept-Ranges: bytes
 Connection: close
@@ -206,7 +206,7 @@ Content-Type: text/html
             </section>
 
             <section class="contact-info">
-                Please forward this error screen to cpanel27.uk2.net's <a href="mailto:cpanel-admin@uk2.net?subject=Error message [400] (none) for (none) port 80 on Monday, 25-Feb-2019 17:58:20 GMT"> WebMaster</a>.
+                Please forward this error screen to cpanel27.uk2.net's <a href="mailto:cpanel-admin@uk2.net?subject=Error message [400] (none) for (none) port 80 on Monday, 25-Feb-2019 20:24:06 GMT"> WebMaster</a>.
             </section>
 
             <p class="reason-text">Your browser sent a request that this server could not understand:</p>

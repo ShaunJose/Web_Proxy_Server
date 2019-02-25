@@ -35,7 +35,7 @@ class ManagementConsole
    *
    * @return: None
    */
-  public static void main(String[] args)
+  public static void main(String[] args) //keeping it nice and small :)
   {
     //initialise the cache
     initCache();

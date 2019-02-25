@@ -21,7 +21,7 @@ public class RequestHandler implements Runnable
   private int port;
 
   //constants
-  public static final String SUCCESS_STATUS = "HTTP/1.1 200 Connection established\n\r\n";
+  public static final String SUCCESS_STATUS = "HTTP/1.1 200 Connection established\r\n\r\n";
   public static final String FORBIDDEN_STATUS = "HTTP/1.1 403 Access forbidden\r\n\r\n";
   public static final int HTTP_PORT = 80;
   public static final int MAX_BYTES = 4096;
@@ -135,9 +135,9 @@ public class RequestHandler implements Runnable
        e.printStackTrace();
      }
 
-     System.out.println("Socket request touchdown! :D");
-
      this.shutDown(); //close client and server sockets
+
+     System.out.println("Socket request touchdown! :D");
    }
 
 
