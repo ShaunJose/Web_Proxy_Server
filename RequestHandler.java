@@ -51,7 +51,7 @@ public class RequestHandler implements Runnable
      String method = reqStuff[0];
      String hostName = reqStuff[1];
      String request = reqStuff[2];
-     System.out.println("New " + type + " request:\n" + request);
+     System.out.println("\nNew " + type + " request:\n" + request);
 
      //check if host is blocked
      if(ManagementConsole.blocked(hostName))
@@ -62,6 +62,7 @@ public class RequestHandler implements Runnable
          outputStream.flush();
        }
        catch(Exception e) { e.printStackTrace(); }
+       //inform manager about this naughty business
        System.out.println("Client with address " + clientSocket.getRemoteSocketAddress() + " tried to access " + hostName + "!"); //let manager know who tried to access what
        this.shutDown(); //close client socket connection
        return; //end request thread
@@ -75,7 +76,7 @@ public class RequestHandler implements Runnable
        System.out.println("Cache Hit!\n");
      }
 
-     //Connect to appropriate server and send status message to client
+     //Connect to appropriate server and start req-response transmission
      try
      {
        //open connection to server
@@ -89,6 +90,8 @@ public class RequestHandler implements Runnable
          outputStream.writeUTF(request);
          outputStream.flush();
        }
+
+       /* --- response part --- */
 
        // set up client output stream
        outputStream = new DataOutputStream(clientSocket.getOutputStream());
@@ -134,7 +137,7 @@ public class RequestHandler implements Runnable
 
      System.out.println("Socket request touchdown! :D");
 
-     this.shutDown();
+     this.shutDown(); //close client and server sockets
    }
 
 
@@ -158,13 +161,15 @@ public class RequestHandler implements Runnable
        int firstSpace = requestMessage.indexOf(' ');
        reqStuff[0] = requestMessage.substring(0, firstSpace);
 
-       //get rest of message and hostName
-       String restOfMessage = getHTTPRequest(reqStuff[0]);
-       reqStuff[1] = restOfMessage.substring(6, restOfMessage.indexOf("\r\n"));
-
+       //get rest of message
+       String restOfMessage = getRequest(reqStuff[0]);
+       //get hostname depending of req being HTTPS/HTTP
        if(reqStuff[0].equals("CONNECT"))
-        reqStuff[1] = requestMessage.substring(8, requestMessage.lastIndexOf(' '));
-       requestMessage += restOfMessage; //update request message
+         reqStuff[1] = requestMessage.substring(8, requestMessage.lastIndexOf(' ')); //first line = CONNECT hostName HTTPversion
+       else
+         reqStuff[1] = restOfMessage.substring(6, restOfMessage.indexOf("\r\n")); //get it from the Host header line
+
+       requestMessage += restOfMessage; //add restOfMessage to requestMessage
      }
 
      catch(Exception e)
@@ -178,25 +183,24 @@ public class RequestHandler implements Runnable
      {
        String[] hostAndPort = reqStuff[1].split(":"); //split host and port
        reqStuff[1] = hostAndPort[0]; //first part is host
-       System.out.println(requestMessage);
        this.port = Integer.parseInt(hostAndPort[1]); //second part is port num
        this.type = ReqType.HTTPS; //type is an HTTPS request
      }
 
-     reqStuff[2] = requestMessage;
+     reqStuff[2] = requestMessage; // add req message into the return array
 
      return reqStuff;
    }
 
 
    /**
-    * Gets the request message from the client
+    * Gets the HTTP/S request message from the client
     *
     * @param method: HTTP method being used
     *
-    * @return: String with the HTTP request from the client side
+    * @return: String with the HTTP/HTTPS request from the client side
     */
-   private String getHTTPRequest(String method)
+   private String getRequest(String method)
    {
      String requestLine = "";
      String requestMessage = "";
@@ -215,7 +219,7 @@ public class RequestHandler implements Runnable
        requestMessage += requestLine;
      } while(!requestLine.equals("\r\n"));
 
-     //get body if it exists
+     //get body if it exists (CONNECT HTTPS requests dont have a body)
      if(method.equals("POST") || method.equals("PUT"))
      {
        requestLine = "";
@@ -268,12 +272,14 @@ public class RequestHandler implements Runnable
        responseMessage += responseLine;
      } while(!responseLine.contains("</html>") && sc.hasNext());
 
-     return responseMessage;
+     return responseMessage; //return entire response
    }
 
 
    /**
     * Closes the client and server socket connections
+    *
+    * @return: None
     */
    private void shutDown()
    {

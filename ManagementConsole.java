@@ -22,7 +22,7 @@ class ManagementConsole
   private static final String BLOCKED_FILE = "blocked.txt";
   private static final String FILE_DELIMITER = "---***^***^^^^^^***^***---";
 
-  //class variables
+  //static variables for the proxy (makes sense to have only 1 proxy)
   private static HashSet<String> blockedURLs = new HashSet<String>();
   private static ArrayList<String> cachedURLs = new ArrayList<String>();
   private static ArrayList<String> cachedResponses = new ArrayList<String>();
@@ -31,7 +31,7 @@ class ManagementConsole
   /**
    * Program initiation method. Accepts requests to block certain servers, and runs the web proxy server on another thread
    *
-   * @param args: The input to the program while running it
+   * @param args: This program doesn't care about args, no input needed
    *
    * @return: None
    */
@@ -81,6 +81,8 @@ class ManagementConsole
    * Reads from filepath into cache variables, to initialise cache vars
    *
    * @param cache: Filepath to cache
+   *
+   * @return: None
    */
   private static void readFromCache(File cache)
   {
@@ -93,17 +95,17 @@ class ManagementConsole
     //read urls and responses into arrays
     while(sc.hasNext())
     {
-      //read url
+      //read url into url list
       line = sc.nextLine();
       cachedURLs.add(line);
 
-      //read response
+      //read response into response list
       String response = "";
       line = ""; //reset line
       do
       {
         response += line;
-        line = sc.nextLine() + "\r\n";
+        line = sc.nextLine() + "\r\n"; //nextLine removes the much needed \r\n
       } while (!line.equals(FILE_DELIMITER + "\r\n"));
       cachedResponses.add(response);
 
@@ -124,6 +126,7 @@ class ManagementConsole
     { cacheWriter = new PrintWriter(CACHE_FILE, "UTF-8"); }
     catch(Exception e) { e.printStackTrace(); return; }
 
+    //save url's and their cahced responses into the cache file
     for(int i = 0; i < cachedURLs.size(); i++)
     {
       //save url
@@ -144,6 +147,9 @@ class ManagementConsole
 
 
   /**
+   * Create the bockedURL-keeper file if it doesnt exist. If exists, call readFromBlocked to read blockedURLS into the HashSet
+   *
+   * @return: None
    */
   private static void initBlockedSet()
   {
@@ -167,6 +173,11 @@ class ManagementConsole
 
 
   /**
+   * Reads from filepath into blockedURL HashSet, line by line
+   *
+   * @param blocked: Filepath to the blockURLs-keeper file
+   *
+   * @return: None
    */
   private static void readFromBlocked(File blocked)
   {
@@ -175,6 +186,7 @@ class ManagementConsole
     try
     { sc = new Scanner(blocked);} catch(Exception e){ e.printStackTrace();return; }
 
+    //read urls line by line
     while(sc.hasNextLine())
     {
       String blockedURL = sc.nextLine();
@@ -185,8 +197,11 @@ class ManagementConsole
 
 
   /**
+   * Save all the blockedURLs in the relevant file, line by line
+   *
+   * @return: None
    */
-  private static void saveBlockedList()
+  private static void saveBlockedSet()
   {
     //initialise variables used to write cache
     PrintWriter blockedWriter = null;
@@ -293,7 +308,7 @@ class ManagementConsole
 
     //save cache, blockedURLs and shut down the web proxy completely
     saveCache();
-    saveBlockedList();
+    saveBlockedSet();
     proxy.shutDown();
 
     //end the thread
@@ -340,7 +355,7 @@ class ManagementConsole
 
     try
     {
-      new URL(url).toURI();
+      new URL(url).toURI(); //exception occurs here = BAD url
       return true;
     }
     catch(Exception e)
@@ -393,7 +408,7 @@ class ManagementConsole
   {
     url = formatURL(url);
 
-    if(!isCached(url)) //if in cache
+    if(!isCached(url)) //if not in cache, abort and return null
       return null;
 
     int index = cachedURLs.indexOf(url);
@@ -462,6 +477,7 @@ class ManagementConsole
   {
     url = formatURL(url); //to ensure that is has http:// or https://
 
+    //concentrate on hostname, not URL
     return blockedURLs.contains(url.substring(url.indexOf("//") + 2));
   }
 }

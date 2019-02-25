@@ -24,6 +24,7 @@ class ClientListenHTTPS implements Runnable
   {
     try
     {
+      //initialise IO streams using the sockets passed
       this.clientIn = new DataInputStream(clientSock.getInputStream());
       this.serverOut = new DataOutputStream(serverSock.getOutputStream());
     }
@@ -46,7 +47,6 @@ class ClientListenHTTPS implements Runnable
     byte[] messageBytes = new byte[RequestHandler.MAX_BYTES];
     int retVal; // return value from the read function
     boolean clientSending = true;
-    int ctr = 1; //iteration counter
 
     try
     {
@@ -61,7 +61,6 @@ class ClientListenHTTPS implements Runnable
           serverOut.write(messageBytes, 0, retVal);
           serverOut.flush(); //flush it out
         }
-        System.out.println("Client Iteration: " + ctr++); //print iteration
       }
     }
 

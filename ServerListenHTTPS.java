@@ -25,6 +25,7 @@ class ServerListenHTTPS
   {
     try
     {
+      //initialise IO streams and client thread
       this.serverIn = new DataInputStream(serverSock.getInputStream());
       this.clientOut = new DataOutputStream(clientSock.getOutputStream());
       this.clientThread = clientThread;
@@ -48,7 +49,6 @@ class ServerListenHTTPS
     byte[] messageBytes = new byte[RequestHandler.MAX_BYTES];
     int retVal; // return value from the read function
     boolean serverSending = true;
-    int ctr = 1; //iteration counter
 
     try
     {
@@ -63,7 +63,6 @@ class ServerListenHTTPS
           clientOut.write(messageBytes, 0, retVal);
           clientOut.flush(); //flush it out
         }
-        System.out.println("Server Iteration: " + ctr++); //print iteration
       }
 
       //wait until client is done

@@ -46,7 +46,7 @@ public class WebProxy implements Runnable
 
       do
       {
-        handleRequest(serverSocket.accept());
+        handleRequest(serverSocket.accept()); //send in sockets to be handled
       } while(this.open);
     }
 
@@ -86,10 +86,11 @@ public class WebProxy implements Runnable
    {
      //waiting for all the request threads to end
      for(Thread reqThread: requestThreads)
-       while(reqThread.isAlive());
+       while(reqThread.isAlive()) {}
 
-     this.open = false;
+     this.open = false; //quit the request or socket-accepting loop
 
+     //close main server (base) socket
      try
      { serverSocket.close(); }
      catch(Exception e)
